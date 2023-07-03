@@ -77,19 +77,29 @@ class UserController extends AbstractController
         }
     }
 
-   //funcion para subir una imagen
     /**
-     * @Route("/ws/uploadimage", name="uploadimage", methods={"POST"})
+     * @Route("/ws/fotoperfil", name="uploadimage", methods={"POST"})
      */
     public function uploadImage(Request $request): JsonResponse
     {
-        $file = $request->files->get('file');
-        $fileName = $file->getClientOriginalName();
-        $file->move('uploads', $fileName);
-        return $this->json([
-            'status' => 'ok',
-            'filename' => $fileName
-        ]);
+        $data = json_decode($request->getContent());
+        $foto = $data->fotoPerfil;
+        $id = $data->iduser;
+        $user = $this->doctrine->getRepository(Usuarios::class)->find($id);
+        if ($user) {
+            $user->setFotoperfil($foto);
+
+            $manager = $this->doctrine->getManager();
+            $manager->flush();
+            return $this->json([
+                'status' => 'ok',
+                'foto' => $foto
+            ]);
+        } else {
+            return $this->json([
+                'error' => 'No se encontro el usuario'
+            ]);
+        }
     }
 }
     
